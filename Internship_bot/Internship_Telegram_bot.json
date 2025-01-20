@@ -1,0 +1,172 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -220,
+        -80
+      ],
+      "id": "c54d367c-6d11-4bc5-bbb2-1ece008a65d2",
+      "name": "Telegram Trigger",
+      "webhookId": "cbcf583d-7876-454d-9b74-847834b1dce8",
+      "credentials": {
+        "telegramApi": {
+          "id": "0ycJ4dP6SZitsdZe",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "You are an AI assistant integrated with a Telegram bot, designed to help the user manage and track their internship applications efficiently. Your responsibilities are:\n\n1. **Real-Time Email Processing**:\n   - Whenever triggered, check the user's email inbox for updates related to internship applications.\n   - Filter and prioritize emails based on keywords like \"shortlisted,\" \"interview,\" \"next round,\" or \"deadline.\"\n   - Ignore irrelevant emails, such as generic promotional content or reminders to apply.\n\n2. **Response Formatting**:\n   - Provide concise, user-friendly updates when the user messages the bot. \n   - Summarize important details such as:\n     - Company name\n     - Role\n     - Status (e.g., \"shortlisted,\" \"interview invitation\")\n     - Next steps (e.g., \"Interview on [Date]\")\n     - Deadlines\n\n3. **Commands**:\n   - Respond to specific Telegram commands, such as:\n     - `/updates`: Fetch and display all new internship-related updates.\n     - `/deadlines`: Show upcoming deadlines for applications.\n     - `/status [Company]`: Display the current status of the user's application for the specified company.\n   - Handle incomplete queries gracefully by providing suggestions, such as: \"I couldn’t find any updates for [Company]. Would you like to check another company?\"\n\n4. **Behavior**:\n   - Act only when triggered by a Telegram command.\n   - Avoid sending notifications unless explicitly requested by the user.\n   - Be fast, accurate, and helpful, ensuring the user doesn’t miss any important updates.\n\n\n\n5. **Tone and Style**:\n   - Use a professional yet friendly tone.\n   - Always present information in a clear and structured format.\n\n6. **Updates Regarding Application**\n- if asked about if the user got accepted or not or any deadlines please reply with updates and deadlines only or if any application has been accepted do not reply with unimportant emails. \n- if you dont see any emails specific to updates or follow up say \"I don't see any acceptance emails or specific deadlines in your recent emails.\"\n\nYour ultimate goal is to make it easy for the user to track and manage their internship applications through simple Telegram commands, without overwhelming them with unnecessary notifications.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        0,
+        -80
+      ],
+      "id": "209a119b-a843-4b69-bde2-9ed63b4cfba5",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "claude-3-5-sonnet-20241022",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.2,
+      "position": [
+        -60,
+        160
+      ],
+      "id": "da55efc3-ed05-45a7-990a-1368f83598a4",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "nBzICL4bPe3qtdJr",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 20,
+        "filters": {
+          "labelIds": [
+            "INBOX",
+            "UNREAD",
+            "CATEGORY_UPDATES",
+            "IMPORTANT"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        160,
+        140
+      ],
+      "id": "c9230922-3369-42cb-9ffc-352fb54a2a57",
+      "name": "Gmail",
+      "webhookId": "e9ba9916-d43a-424c-9721-a2ede5b10066",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "iwcoM0lQ1CkHGUVp",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        360,
+        -80
+      ],
+      "id": "4296d6c1-fdb3-4027-bcc9-bb6b9367bb34",
+      "name": "Telegram",
+      "credentials": {
+        "telegramApi": {
+          "id": "0ycJ4dP6SZitsdZe",
+          "name": "Telegram account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3b7cf6e8-76a2-4fc6-ab4e-744870dc170f",
+  "meta": {
+    "instanceId": "fe169e07de5ce2142573ec7da19919b983b558705d1a0993670260e22e48ba04"
+  },
+  "id": "Myf5uFX7O7q2mQv0",
+  "tags": []
+}
